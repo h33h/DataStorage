@@ -76,11 +76,11 @@ extension NSManagedObject {
                             if relationship.deleteNotUpdated {
                                 let updatedObjects = destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)
                                 let objectsForRemove = orderedSet.compactMap { $0 as? NSManagedObject }.filter { !updatedObjects.contains($0) }
-                                orderedSet.intersect(NSOrderedSet(objects: updatedObjects))
+                                orderedSet.intersectSet(Set(updatedObjects))
                                 setValue(orderedSet, forKey: relationship.name)
                                 objectsForRemove.forEach { managedObjectContext.delete($0) }
                             } else {
-                                orderedSet.union(NSOrderedSet(objects: destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)))
+                                orderedSet.unionSet(Set(destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)))
                                 setValue(orderedSet, forKey: relationship.name)
                             }
                         } else {
