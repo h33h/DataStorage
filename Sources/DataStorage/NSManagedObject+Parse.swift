@@ -75,9 +75,10 @@ extension NSManagedObject {
                     if relationship.isOrdered {
                         if let orderedSet = value(forKey: relationship.name) as? NSMutableOrderedSet {
                             if relationship.deleteNotUpdated {
-                                let updatedObjects = destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)
+                                let updatedObjects = Set(destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext))
                                 let objectsForRemove = orderedSet.compactMap { $0 as? NSManagedObject }.filter { !updatedObjects.contains($0) }
-                                orderedSet.intersectSet(Set(updatedObjects))
+                                orderedSet.intersectSet(updatedObjects)
+                                orderedSet.unionSet(updatedObjects)
                                 setValue(orderedSet, forKey: relationship.name)
                                 objectsForRemove.forEach { managedObjectContext.delete($0) }
                             } else {
@@ -90,9 +91,10 @@ extension NSManagedObject {
                     } else {
                         if let set = value(forKey: relationship.name) as? NSMutableSet {
                             if relationship.deleteNotUpdated {
-                                let updatedObjects = destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)
+                                let updatedObjects = Set(destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext))
                                 let objectsForRemove = set.compactMap { $0 as? NSManagedObject }.filter { !updatedObjects.contains($0) }
-                                set.intersect(Set(updatedObjects))
+                                set.intersect(updatedObjects)
+                                set.union(updatedObjects)
                                 setValue(set, forKey: relationship.name)
                                 objectsForRemove.forEach { managedObjectContext.delete($0) }
                             } else {
