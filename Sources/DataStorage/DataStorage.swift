@@ -79,7 +79,7 @@ public struct DataStorageFRConfiguration {
     var limit: Int
 }
 
-public class DataStorage {
+open class BaseDataStorage {
     private let storeConfiguration: PersistentStoreConfiguration
     
     public let persistentStoreCoordinator: NSPersistentStoreCoordinator

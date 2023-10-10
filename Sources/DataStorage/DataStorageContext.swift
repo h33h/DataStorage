@@ -10,6 +10,7 @@ import CoreData
 public enum DataStorageContextError: Error {
     case convertToConcreteTypeFail
     case saveReadOnlyContextFail
+    case notFoundObject
 }
 
 public class DataStorageContext: NSManagedObjectContext {
@@ -59,9 +60,13 @@ public class DataStorageContext: NSManagedObjectContext {
         return objects
     }
     
-    public func existingObject<T: NSManagedObject>(of type: T.Type, withId id: NSManagedObjectID) throws -> T? {
+    public func existingObject<T: NSManagedObject>(of type: T.Type, withId id: NSManagedObjectID) throws -> T {
         guard let objects = try existingObjects(withIds: [id]) as? [T] else { throw DataStorageContextError.convertToConcreteTypeFail }
-        return objects.first
+        if let object =  objects.first {
+            return object
+        } else {
+            throw DataStorageContextError.notFoundObject
+        }
     }
     
     public func deleteObjects(_ objects: [NSManagedObject]) {
