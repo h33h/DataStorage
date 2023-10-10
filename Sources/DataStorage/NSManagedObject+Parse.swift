@@ -76,10 +76,12 @@ extension NSManagedObject {
                             if relationship.deleteNotUpdated {
                                 let updatedObjects = destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)
                                 let objectsForRemove = orderedSet.compactMap { $0 as? NSManagedObject }.filter { !updatedObjects.contains($0) }
-                                setValue(orderedSet.intersect(NSOrderedSet(objects: updatedObjects)), forKey: relationship.name)
+                                orderedSet.intersect(NSOrderedSet(objects: updatedObjects))
+                                setValue(orderedSet, forKey: relationship.name)
                                 objectsForRemove.forEach { managedObjectContext.delete($0) }
                             } else {
-                                setValue(orderedSet.union(NSOrderedSet(objects: destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext))), forKey: relationship.name)
+                                orderedSet.union(NSOrderedSet(objects: destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)))
+                                setValue(orderedSet, forKey: relationship.name)
                             }
                         } else {
                             setValue(NSOrderedSet(array: destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)), forKey: relationship.name)
@@ -89,10 +91,12 @@ extension NSManagedObject {
                             if relationship.deleteNotUpdated {
                                 let updatedObjects = destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)
                                 let objectsForRemove = set.compactMap { $0 as? NSManagedObject }.filter { !updatedObjects.contains($0) }
-                                setValue(set.intersect(Set(updatedObjects)), forKey: relationship.name)
+                                set.intersect(Set(updatedObjects))
+                                setValue(set, forKey: relationship.name)
                                 objectsForRemove.forEach { managedObjectContext.delete($0) }
                             } else {
-                                setValue(set.union(Set(destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext))), forKey: relationship.name)
+                                set.union(Set(destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)))
+                                setValue(set, forKey: relationship.name)
                             }
                         } else {
                             setValue(NSSet(array: destinationClass.update(withArrayOfDictionaries: relationshipDictionaries, inContext: managedObjectContext)), forKey: relationship.name)
