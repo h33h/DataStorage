@@ -15,32 +15,39 @@ public enum DataStorageParseError: Error {
 extension NSManagedObject {
     static public func update(withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) -> [NSManagedObject] {
         let entity = entity()
-        
-        var arrayOfDicts = arrayOfDicts
         var result = [NSManagedObject]()
-        
+
         if let uniqueAttribute = entity.uniqueAttribute {
             let values = arrayOfDicts.compactMap { $0[uniqueAttribute.importName] as? CVarArg }
-            let existedObjects = (try? Self.objects(withPossibleValues: values, for: uniqueAttribute.name, inContext: context)) ?? []
-            let dictsAndObjects: [([String : Any], NSManagedObject)] = existedObjects.compactMap { existedObject in
-                guard let dictForObject = arrayOfDicts.first(where: { $0[uniqueAttribute.importName] == existedObject.value(forKey: uniqueAttribute.name) }) else { return nil }
-                return (dictForObject, existedObject)
+            let setValues = NSSet(objects: values)
+            let existingObjects = (try? objects(withPossibleValues: values, for: uniqueAttribute.name, inContext: context)) ?? []
+
+            var existingObjectDict: [AnyHashable: NSManagedObject] = [:]
+            existingObjects.forEach { existingObject in
+                if let value = existingObject.value(forKey: uniqueAttribute.name) as? AnyHashable {
+                    existingObjectDict[value] = existingObject
+                }
             }
-            dictsAndObjects.forEach { dict, object in
-                object.update(withDictionary: dict)
-                result.append(object)
+
+            for dict in arrayOfDicts {
+                if let value = dict[uniqueAttribute.importName] as? AnyHashable,
+                   let existingObject = existingObjectDict[value] {
+                    existingObject.update(withDictionary: dict)
+                    result.append(existingObject)
+                } else {
+                    let newObject = Self(context: context)
+                    newObject.update(withDictionary: dict)
+                    result.append(newObject)
+                }
             }
-            let usedDicts = dictsAndObjects.map { $0.0 }
-            arrayOfDicts = arrayOfDicts.filter { dict in !usedDicts.contains { dict[uniqueAttribute.importName] == $0[uniqueAttribute.importName] } }
-        }
-        
-        result.append(contentsOf: arrayOfDicts
-            .map { dictionary in
-                let newObject = Self.init(context: context)
+        } else {
+            result += arrayOfDicts.map { dictionary in
+                let newObject = Self(context: context)
                 newObject.update(withDictionary: dictionary)
                 return newObject
             }
-        )
+        }
+
         return result
     }
     
