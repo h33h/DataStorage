@@ -31,10 +31,3 @@ extension NSPropertyDescription {
         return !nonExportable
     }
 }
-
-extension NSRelationshipDescription {
-    var deleteNotUpdated: Bool {
-        guard let deleteNotUpdated = (userInfo?[DataStorageKey.deleteNotUpdated.rawValue] as? NSString)?.boolValue else { return destinationEntity?.uniqueName == nil }
-        return deleteNotUpdated
-    }
-}

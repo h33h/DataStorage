@@ -58,4 +58,3 @@ public func !=<L, R>(lhs: L, rhs: R) -> Bool {
 public func !=<L, R>(lhs: L?, rhs: R?) -> Bool {
     !(lhs == rhs)
 }
-
