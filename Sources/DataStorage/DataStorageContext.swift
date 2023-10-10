@@ -27,7 +27,7 @@ public class DataStorageContext: NSManagedObjectContext {
         fatalError("init(coder:) has not been implemented")
     }
     
-    public func performUpdateAndSave<T>(updateBlock: @escaping (_ context: NSManagedObjectContext) throws -> T, completion: @escaping (Result<T, Error>) -> Void) {
+    public func performUpdateAndSave<T>(updateBlock: @escaping (_ context: DataStorageContext) throws -> T, completion: @escaping (Result<T, Error>) -> Void) {
         perform {
             do {
                 let result = try updateBlock(self)
@@ -39,7 +39,7 @@ public class DataStorageContext: NSManagedObjectContext {
         }
     }
 
-    public func performUpdateAndWaitAndSave<T>(updateBlock: @escaping (_ context: NSManagedObjectContext) throws -> T, completion: @escaping (Result<T, Error>) -> Void) {
+    public func performUpdateAndWaitAndSave<T>(updateBlock: @escaping (_ context: DataStorageContext) throws -> T, completion: @escaping (Result<T, Error>) -> Void) {
         performAndWait {
             do {
                 let result = try updateBlock(self)
