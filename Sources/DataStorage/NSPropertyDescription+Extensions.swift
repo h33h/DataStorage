@@ -34,7 +34,7 @@ extension NSPropertyDescription {
 
 extension NSRelationshipDescription {
     var deleteNotUpdated: Bool {
-        guard let deleteNotUpdated = (userInfo?[DataStorageKey.deleteNotUpdated.rawValue] as? NSString)?.boolValue else { return entity.uniqueName == nil }
+        guard let deleteNotUpdated = (userInfo?[DataStorageKey.deleteNotUpdated.rawValue] as? NSString)?.boolValue else { return destinationEntity?.uniqueName == nil }
         return deleteNotUpdated
     }
 }
