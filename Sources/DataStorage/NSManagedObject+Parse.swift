@@ -118,7 +118,7 @@ extension NSManagedObject {
                 return url
             }
         case .dateAttributeType:
-            if let value = value as? String, let date = value.date {
+            if let value = value as? String, let date = value.date as? NSDate {
                 return date
             }
         default: break
