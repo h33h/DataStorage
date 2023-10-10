@@ -31,7 +31,7 @@ extension NSManagedObject {
                 result.append(object)
             }
             let usedDicts = dictsAndObjects.map { $0.0 }
-            arrayOfDicts = arrayOfDicts.filter { dict in !usedDicts.contains { dict == $0 } }
+            arrayOfDicts = arrayOfDicts.filter { dict in !usedDicts.contains { dict[uniqueAttribute.importName] == $0[uniqueAttribute.importName] } }
         }
         
         result.append(contentsOf: arrayOfDicts
