@@ -17,24 +17,24 @@ enum DataStorageKey: String {
 
 extension NSPropertyDescription {
     var importName: String {
-        guard let importKeyValue = userInfo?[DataStorageKey.importKey] as? String else { return name }
+        guard let importKeyValue = userInfo?[DataStorageKey.importKey.rawValue] as? String else { return name }
         return importKeyValue
     }
     
     var exportName: String {
-        guard let customExportKey = userInfo?[DataStorageKey.exportKey] as? String else { return name }
+        guard let customExportKey = userInfo?[DataStorageKey.exportKey.rawValue] as? String else { return name }
         return customExportKey
     }
     
     var canExport: Bool {
-        guard let nonExportable = (userInfo?[DataStorageKey.nonExportable] as? NSString)?.boolValue else { return true }
+        guard let nonExportable = (userInfo?[DataStorageKey.nonExportable.rawValue] as? NSString)?.boolValue else { return true }
         return !nonExportable
     }
 }
 
 extension NSRelationshipDescription {
     var deleteNotUpdated: Bool {
-        guard let deleteNotUpdated = (userInfo?[DataStorageKey.deleteNotUpdated] as? NSString)?.boolValue else { return false }
+        guard let deleteNotUpdated = (userInfo?[DataStorageKey.deleteNotUpdated.rawValue] as? NSString)?.boolValue else { return false }
         return deleteNotUpdated
     }
 }

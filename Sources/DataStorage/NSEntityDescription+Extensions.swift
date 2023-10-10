@@ -13,7 +13,7 @@ extension NSEntityDescription {
     var relationships: [NSRelationshipDescription] { relationshipsByName.map { $0.value } }
     
     var uniqueName: String? {
-        guard let uniqueKeyValue = userInfo?[DataStorageKey.uniqueKey] as? String else { return nil }
+        guard let uniqueKeyValue = userInfo?[DataStorageKey.uniqueKey.rawValue] as? String else { return nil }
         return uniqueKeyValue
     }
     
