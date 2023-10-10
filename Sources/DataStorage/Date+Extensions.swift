@@ -13,8 +13,14 @@ public extension Date {
         
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        return formatter.date(from: dateString)
+        if let date = formatter.date(from: dateString) {
+            return date
+        }
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: dateString) {
+            return date
+        }
+        return nil
     }
     
     static func date(fromUnixTimestampString unixTimestamp: String) -> Date? {
