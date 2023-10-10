@@ -17,34 +17,28 @@ extension NSManagedObject {
         let entity = entity()
         var result = [NSManagedObject]()
 
-        if let uniqueAttribute = entity.uniqueAttribute {
-            let values = arrayOfDicts.compactMap { $0[uniqueAttribute.importName] as? CVarArg }
-            let setValues = NSSet(objects: values)
-            let existingObjects = (try? objects(withPossibleValues: values, for: uniqueAttribute.name, inContext: context)) ?? []
-
-            var existingObjectDict: [AnyHashable: NSManagedObject] = [:]
-            existingObjects.forEach { existingObject in
-                if let value = existingObject.value(forKey: uniqueAttribute.name) as? AnyHashable {
-                    existingObjectDict[value] = existingObject
-                }
-            }
-
-            for dict in arrayOfDicts {
-                if let value = dict[uniqueAttribute.importName] as? AnyHashable,
-                   let existingObject = existingObjectDict[value] {
-                    existingObject.update(withDictionary: dict)
-                    result.append(existingObject)
-                } else {
-                    let newObject = Self(context: context)
-                    newObject.update(withDictionary: dict)
-                    result.append(newObject)
-                }
-            }
-        } else {
+        guard let uniqueAttribute = entity.uniqueAttribute else {
             result += arrayOfDicts.map { dictionary in
                 let newObject = Self(context: context)
                 newObject.update(withDictionary: dictionary)
                 return newObject
+            }
+            return result
+        }
+
+        let values = arrayOfDicts.compactMap { $0[uniqueAttribute.importName] as? CVarArg }
+        let existingObjects = (try? objects(withPossibleValues: values, for: uniqueAttribute.name, inContext: context)) ?? []
+        let existingObjectDict = Dictionary(existingObjects.compactMap { ($0.value(forKey: uniqueAttribute.name) as? AnyHashable, $0) }, uniquingKeysWith: { $1 })
+
+        for dict in arrayOfDicts {
+            if let value = dict[uniqueAttribute.importName] as? AnyHashable,
+               let existingObject = existingObjectDict[value] {
+                existingObject.update(withDictionary: dict)
+                result.append(existingObject)
+            } else {
+                let newObject = Self(context: context)
+                newObject.update(withDictionary: dict)
+                result.append(newObject)
             }
         }
 
