@@ -84,6 +84,79 @@ public extension NSManagedObjectContext {
         return try? existingObjectT(with: objectId)
     }
     
+    func objectsCount<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init()) throws -> Int {
+        let fetchRequest = try T.createFetchRequest(with: config)
+        return try count(for: fetchRequest)
+    }
+    
+    func deleteObjects<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init()) throws {
+        let deleteRequest = try T.createDeleteRequest(with: config)
+        try execute(deleteRequest)
+    }
+    
+    func objects<T: NSManagedObject>(of type: T.Type, with value: CVarArg, for key: String, includePendingChanges: Bool = true) throws -> [T] {
+        try objectsSatisfying(of: T.self, [key: value], includePendingChanges: includePendingChanges)
+    }
+    
+    func objects<T: NSManagedObject>(of type: T.Type, withPossibleValues values: [CVarArg], for key: String, includePendingChanges: Bool = true) throws -> [T] {
+        let predicate = NSPredicate(format: "%K IN %@", key, values)
+        let fetchRequest = try T.createFetchRequest(with: .init(predicate: predicate))
+        fetchRequest.includesPendingChanges = includePendingChanges
+        if let objects = try fetch(fetchRequest) as? [T] {
+            return objects
+        } else {
+            throw DataStorageError.convertToConcreteTypeFail
+        }
+    }
+    
+    func objectsSatisfying<T: NSManagedObject>(of type: T.Type, _ dict: [String: CVarArg], includePendingChanges: Bool = true) throws -> [T] {
+        let predicates = dict.map { NSPredicate(format: "%K == %@", $0.key, $0.value) }
+        let fetchRequest = try T.createFetchRequest(with: .init(predicate: NSCompoundPredicate(andPredicateWithSubpredicates: predicates)))
+        fetchRequest.includesPendingChanges = includePendingChanges
+        if let objects = try fetch(fetchRequest) as? [T] {
+            return objects
+        } else {
+            throw DataStorageError.convertToConcreteTypeFail
+        }
+    }
+    
+    func anyObject<T: NSManagedObject>(of type: T.Type) throws -> T {
+        if let object = try fetch(T.createFetchRequest()).first {
+            if let object = object as? T {
+                return object
+            } else {
+                throw DataStorageError.convertToConcreteTypeFail
+            }
+        } else {
+            throw DataStorageError.objectNotExist
+        }
+    }
+    
+    func copy<T: NSManagedObject>(_ object: T) -> T {
+        let newObject = T(context: self)
+            
+        object.entity.attributesByName.forEach { key, _ in
+            if let attributeValue = object.value(forKey: key) {
+                newObject.setValue(attributeValue, forKey: key)
+            }
+        }
+        
+        object.entity.relationshipsByName.forEach { key, _ in
+            if let relationshipValue = object.value(forKey: key) as? Set<NSManagedObject> {
+                let newRelationshipSet = NSMutableSet()
+                for relatedObject in relationshipValue {
+                    let relatedCopy = copy(relatedObject)
+                    newRelationshipSet.add(relatedCopy)
+                }
+                newObject.setValue(newRelationshipSet, forKey: key)
+            } else if let relationshipValue = object.value(forKey: key) as? NSManagedObject {
+                let relatedCopy = copy(relationshipValue)
+                newObject.setValue(relatedCopy, forKey: key)
+            }
+        }
+        return newObject
+    }
+    
     func deleteObjects(_ objects: [NSManagedObject]) {
         objects.forEach { delete($0) }
     }
