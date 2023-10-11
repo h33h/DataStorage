@@ -92,19 +92,9 @@ open class BaseDataStorage {
     
     public let persistentStoreCoordinator: NSPersistentStoreCoordinator
     
-    public private(set) lazy var mainContext: NSManagedObjectContext = {
-        let mainContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType, isReadOnly: true)
-        mainContext.persistentStoreCoordinator = persistentStoreCoordinator
-        mainContext.automaticallyMergesChangesFromParent = true
-        return mainContext
-    }()
+    public private(set) lazy var mainContext = createMainContext()
     
-    public private(set) lazy var writeContext: NSManagedObjectContext = {
-        let writeContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        writeContext.persistentStoreCoordinator = persistentStoreCoordinator
-        writeContext.automaticallyMergesChangesFromParent = true
-        return writeContext
-    }()
+    public private(set) lazy var writeContext = createWriteContext()
     
     public init(configuration: DataStorageConfiguration) throws {
         guard let modelURL = Bundle.main.url(forResource: configuration.modelName, withExtension: "momd") else {
@@ -139,19 +129,30 @@ open class BaseDataStorage {
     
     public func deleteAllData() throws {
         guard let storeURL = storeConfiguration.storeURL else { return }
-        mainContext.performAndWait {
-            mainContext.reset()
-        }
-        writeContext.performAndWait {
-            writeContext.reset()
-        }
         try persistentStoreCoordinator.destroyPersistentStore(at: storeURL, ofType: storeConfiguration.storeType.storeType)
         try connectPersistentStore(with: storeConfiguration)
+        mainContext = createMainContext()
+        writeContext = createWriteContext()
     }
     
     public func createNewContext(concurrencyType: NSManagedObjectContextConcurrencyType = .privateQueueConcurrencyType, isReadOnly: Bool = false, deleteInvalidObjectsOnSave: Bool = true) -> NSManagedObjectContext {
         let context = NSManagedObjectContext(concurrencyType: concurrencyType, isReadOnly: isReadOnly, deleteInvalidObjectsOnSave: deleteInvalidObjectsOnSave)
         context.persistentStoreCoordinator = persistentStoreCoordinator
         return context
+    }
+    
+    private func createMainContext() -> NSManagedObjectContext {
+        let mainContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType, isReadOnly: true)
+        mainContext.persistentStoreCoordinator = persistentStoreCoordinator
+        mainContext.automaticallyMergesChangesFromParent = true
+        return mainContext
+    }
+    
+    private func createWriteContext() -> NSManagedObjectContext {
+        let writeContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        writeContext.persistentStoreCoordinator = persistentStoreCoordinator
+        writeContext.automaticallyMergesChangesFromParent = true
+        writeContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        return writeContext
     }
 }
