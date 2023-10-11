@@ -90,12 +90,14 @@ public extension BaseDataStorage {
     }
     
     func updateObjects<T: NSManagedObject>(of type: T.Type, withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) throws -> [T] {
-        let entity = T.entity()
+        let entity = type.entity()
         var result = [T]()
 
         guard let uniqueAttribute = entity.uniqueAttribute else {
             result += try arrayOfDicts.map { dictionary in
-                let newObject = T(context: context)
+                guard let newObject = NSEntityDescription.insertNewObject(forEntityName: entity.className, into: context) as? T else {
+                    throw DataStorageError.convertToConcreteTypeFail
+                }
                 try update(newObject, withDictionary: dictionary, inContext: context)
                 return newObject
             }
