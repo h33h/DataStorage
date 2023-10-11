@@ -21,4 +21,8 @@ extension NSEntityDescription {
         guard let uniqueName else { return nil }
         return attributes.first { $0.name == uniqueName }
     }
+    
+    func type<T: NSManagedObject>() -> T.Type? {
+        NSClassFromString(managedObjectClassName) as? T.Type
+    }
 }

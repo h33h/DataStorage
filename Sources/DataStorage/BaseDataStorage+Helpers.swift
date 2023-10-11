@@ -90,12 +90,12 @@ public extension BaseDataStorage {
     }
     
     func updateObjects<T: NSManagedObject>(of type: T.Type, withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) throws -> [T] {
-        let entity = type.entity()
+        let entity = T.entity()
         var result = [T]()
 
         guard let uniqueAttribute = entity.uniqueAttribute else {
             result += try arrayOfDicts.map { dictionary in
-                let newObject = type.init(context: context)
+                let newObject = T(context: context)
                 try update(newObject, withDictionary: dictionary, inContext: context)
                 return newObject
             }
@@ -109,7 +109,7 @@ public extension BaseDataStorage {
                 throw DataStorageError.importUniqueKeyMustBeCVarArg
             }
         }
-        let existingObjects = try objects(of: type, withPossibleValues: values, for: uniqueAttribute.name, inContext: context)
+        let existingObjects = try objects(of: T.self, withPossibleValues: values, for: uniqueAttribute.name, inContext: context)
         let existingObjectDict = Dictionary(try existingObjects.map { existingObject in
             if let hashableUniqueAttribute = existingObject.value(forKey: uniqueAttribute.name) as? AnyHashable {
                 return (hashableUniqueAttribute, existingObject)
@@ -125,7 +125,7 @@ public extension BaseDataStorage {
                 try update(existingObject, withDictionary: dict, inContext: context)
                 result.append(existingObject)
             } else {
-                let newObject = type.init(context: context)
+                let newObject = T(context: context)
                 try update(newObject, withDictionary: dict, inContext: context)
                 result.append(newObject)
             }
@@ -157,7 +157,7 @@ public extension BaseDataStorage {
         let relationships = object.entity.relationships
         
         try relationships.forEach { relationship in
-            guard let destinationEntity = relationship.destinationEntity, let destinationClass = NSClassFromString(destinationEntity.managedObjectClassName) as? NSManagedObject.Type else { throw DataStorageError.relationshipHaveNoDestinationEntity }
+            guard let destinationEntity = relationship.destinationEntity, let destinationClass = destinationEntity.type() else { throw DataStorageError.relationshipHaveNoDestinationEntity }
             
             if relationship.isToMany {
                 if let relationshipDictionaries = dict[relationship.importName] as? [[String: Any]] {
