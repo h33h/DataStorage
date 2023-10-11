@@ -11,6 +11,12 @@ public enum DataStorageError: Error {
     case dataModelNotFound
     case dataModelLoadFail
     case persistentStoreConnectionFail
+    case convertToConcreteTypeFail
+    case saveReadOnlyContextFail
+    case objectNotExist
+    case uniqueKeyMustBeHashable
+    case importUniqueKeyMustBeCVarArg
+    case relationshipHaveNoDestinationEntity
 }
 
 public struct DataStorageConfiguration {
@@ -141,102 +147,5 @@ open class BaseDataStorage {
         let context = NSManagedObjectContext(concurrencyType: concurrencyType, isReadOnly: isReadOnly, deleteInvalidObjectsOnSave: deleteInvalidObjectsOnSave)
         context.persistentStoreCoordinator = persistentStoreCoordinator
         return context
-    }
-    
-    public func createFetchRequest<T: NSManagedObject>(of type: T.Type, with config: DataStorageFRConfiguration = .init()) -> NSFetchRequest<T> {
-        let fetchRequest = T.fetchRequest()
-        fetchRequest.predicate = config.predicate
-        fetchRequest.sortDescriptors = config.sortDescriptors
-        fetchRequest.fetchLimit = config.limit
-        return fetchRequest as! NSFetchRequest<T>
-    }
-    
-    public func createDeleteRequest<T: NSManagedObject>(of type: T.Type, with config: DataStorageFRConfiguration = .init()) -> NSBatchDeleteRequest {
-        .init(fetchRequest: createFetchRequest(of: type, with: config) as! NSFetchRequest<NSFetchRequestResult>)
-    }
-    
-    public func objectsCount<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init(), inContext context: NSManagedObjectContext, completion: @escaping (Result<Int, Error>) -> Void) {
-        context.perform {
-            do {
-                completion(.success(try self.objectsCount(of: type, for: config, inContext: context)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    public func deleteObjects<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init(), inContext context: NSManagedObjectContext, completion: @escaping (Result<Void, Error>) -> Void) {
-        context.performUpdateAndSave(updateBlock: { context in
-            do {
-                completion(.success(try self.deleteObjects(of: type, for: config, inContext: context)))
-            } catch {
-                completion(.failure(error))
-            }
-        }, completion: completion)
-    }
-    
-    public func objects<T: NSManagedObject>(of type: T.Type, with value: CVarArg, for key: String, includePendingChanges: Bool = true, inContext context: NSManagedObjectContext, completion: @escaping (Result<[T], Error>) -> Void) {
-        context.perform {
-            do {
-                completion(.success(try self.objects(of: type, with: value, for: key, includePendingChanges: includePendingChanges, inContext: context)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    public func objects<T: NSManagedObject>(of type: T.Type, withPossibleValues values: [CVarArg], for key: String, includePendingChanges: Bool = true, inContext context: NSManagedObjectContext, completion: @escaping (Result<[T], Error>) -> Void) {
-        context.perform {
-            do {
-                completion(.success(try self.objects(of: type, withPossibleValues: values, for: key, includePendingChanges: includePendingChanges, inContext: context)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    public func objectsSatisfying<T: NSManagedObject>(of type: T.Type, _ dict: [String: CVarArg], includePendingChanges: Bool = true, inContext context: NSManagedObjectContext, completion: @escaping (Result<[T], Error>) -> Void) {
-        context.perform {
-            do {
-                completion(.success(try self.objectsSatisfying(of: type, dict, includePendingChanges: includePendingChanges, inContext: context)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    public func anyObject<T: NSManagedObject>(of type: T.Type, inContext context: NSManagedObjectContext, completion: @escaping (Result<T?, Error>) -> Void) {
-        context.perform {
-            do {
-                completion(.success(try self.anyObject(of: type, inContext: context)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
-    }
-    
-    public func copy<T: NSManagedObject>(_ object: T, in context: NSManagedObjectContext, completion: @escaping (T?) -> Void) {
-        context.perform {
-            completion(self.copy(object, in: context))
-        }
-    }
-    
-    public func updateObjects<T: NSManagedObject>(of type: T.Type, withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext, completion: @escaping ([T]) -> Void) {
-        context.perform {
-            completion(self.updateObjects(of: type, withArrayOfDictionaries: arrayOfDicts, inContext: context))
-        }
-    }
-    
-    public func updateObject<T: NSManagedObject>(of type: T.Type, withDictionary dict: [String: Any], inContext context: NSManagedObjectContext, completion: @escaping (T) -> Void) {
-        context.perform {
-            completion(self.updateObject(of: type, withDictionary: dict, inContext: context))
-        }
-    }
-    
-    public func update<T: NSManagedObject>(_ object: T, withDictionary dict: [String: Any], inContext context: NSManagedObjectContext, completion: @escaping () -> Void) {
-        context.perform {
-            self.update(object, withDictionary: dict, inContext: context)
-            completion()
-        }
     }
 }

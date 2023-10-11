@@ -7,12 +7,6 @@
 
 import CoreData
 
-public enum DataStorageContextError: Error {
-    case convertToConcreteTypeFail
-    case saveReadOnlyContextFail
-    case notFoundObject
-}
-
 public extension NSManagedObjectContext {
     struct Holder {
         static var _isReadOnly: Bool = false
@@ -64,16 +58,16 @@ public extension NSManagedObjectContext {
     }
     
     func existingObjects<T: NSManagedObject>(of type: T.Type, withIds ids: [NSManagedObjectID]) throws -> [T] {
-        guard let objects = try existingObjects(withIds: ids) as? [T] else { throw DataStorageContextError.convertToConcreteTypeFail }
+        guard let objects = try existingObjects(withIds: ids) as? [T] else { throw DataStorageError.convertToConcreteTypeFail }
         return objects
     }
     
     func existingObject<T: NSManagedObject>(of type: T.Type, withId id: NSManagedObjectID) throws -> T {
-        guard let objects = try existingObjects(withIds: [id]) as? [T] else { throw DataStorageContextError.convertToConcreteTypeFail }
+        guard let objects = try existingObjects(withIds: [id]) as? [T] else { throw DataStorageError.convertToConcreteTypeFail }
         if let object =  objects.first {
             return object
         } else {
-            throw DataStorageContextError.notFoundObject
+            throw DataStorageError.objectNotExist
         }
     }
     
@@ -95,7 +89,7 @@ public extension NSManagedObjectContext {
     }
     
     func saveChanges() throws {
-        guard !isReadOnly else { throw DataStorageContextError.saveReadOnlyContextFail }
+        guard !isReadOnly else { throw DataStorageError.saveReadOnlyContextFail }
         guard hasChanges else { return }
         
         do {
