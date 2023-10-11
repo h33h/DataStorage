@@ -76,7 +76,9 @@ public extension NSManagedObject {
         let relationships = entity.relationships
         
         try relationships.forEach { relationship in
-            guard let destinationEntity = relationship.destinationEntity, let destinationClass = NSClassFromString(destinationEntity.managedObjectClassName) as? NSManagedObject.Type else { throw DataStorageError.relationshipHaveNoDestinationEntity }
+            guard let destinationEntity = relationship.destinationEntity, let destinationClass = NSClassFromString(destinationEntity.managedObjectClassName) as? NSManagedObject.Type else {
+                throw DataStorageError.relationshipHaveNoDestinationEntity
+            }
             
             if relationship.isToMany {
                 if let relationshipDictionaries = dict[relationship.importName] as? [[String: Any]] {

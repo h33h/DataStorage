@@ -7,7 +7,7 @@
 
 import CoreData
 
-public enum DataStorageError: Error {
+public enum DataStorageError: String, LocalizedError {
     case dataModelNotFound
     case dataModelLoadFail
     case persistentStoreConnectionFail
@@ -17,6 +17,8 @@ public enum DataStorageError: Error {
     case uniqueKeyMustBeHashable
     case importUniqueKeyMustBeCVarArg
     case relationshipHaveNoDestinationEntity
+    
+    public var errorDescription: String? { rawValue }
 }
 
 public struct DataStorageConfiguration {

@@ -8,7 +8,7 @@
 import CoreData
 
 public extension NSManagedObject {
-    class func createFetchRequest(with config: DataStorageFRConfiguration = .init()) throws -> NSFetchRequest<NSFetchRequestResult> {
+    class func createFetchRequest(with config: DataStorageFRConfiguration = .init()) -> NSFetchRequest<NSFetchRequestResult> {
         let fetchRequest = fetchRequest()
         fetchRequest.predicate = config.predicate
         fetchRequest.sortDescriptors = config.sortDescriptors
@@ -16,8 +16,8 @@ public extension NSManagedObject {
         return fetchRequest
     }
     
-    class func createDeleteRequest(with config: DataStorageFRConfiguration = .init()) throws -> NSBatchDeleteRequest {
-        .init(fetchRequest: try createFetchRequest(with: config))
+    class func createDeleteRequest(with config: DataStorageFRConfiguration = .init()) -> NSBatchDeleteRequest {
+        .init(fetchRequest: createFetchRequest(with: config))
     }
     
     func validate() throws {

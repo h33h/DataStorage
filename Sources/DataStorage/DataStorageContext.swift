@@ -58,12 +58,16 @@ public extension NSManagedObjectContext {
     }
     
     func existingObjects<T: NSManagedObject>(of type: T.Type, withIds ids: [NSManagedObjectID]) throws -> [T] {
-        guard let objects = try existingObjects(withIds: ids) as? [T] else { throw DataStorageError.convertToConcreteTypeFail }
+        guard let objects = try existingObjects(withIds: ids) as? [T] else {
+            throw DataStorageError.convertToConcreteTypeFail
+        }
         return objects
     }
     
     func existingObject<T: NSManagedObject>(of type: T.Type, withId id: NSManagedObjectID) throws -> T {
-        guard let objects = try existingObjects(withIds: [id]) as? [T] else { throw DataStorageError.convertToConcreteTypeFail }
+        guard let objects = try existingObjects(withIds: [id]) as? [T] else {
+            throw DataStorageError.convertToConcreteTypeFail
+        }
         if let object =  objects.first {
             return object
         } else {
@@ -85,12 +89,12 @@ public extension NSManagedObjectContext {
     }
     
     func objectsCount<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init()) throws -> Int {
-        let fetchRequest = try T.createFetchRequest(with: config)
+        let fetchRequest = T.createFetchRequest(with: config)
         return try count(for: fetchRequest)
     }
     
     func deleteObjects<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init()) throws {
-        let deleteRequest = try T.createDeleteRequest(with: config)
+        let deleteRequest = T.createDeleteRequest(with: config)
         try execute(deleteRequest)
     }
     
@@ -100,7 +104,7 @@ public extension NSManagedObjectContext {
     
     func objects<T: NSManagedObject>(of type: T.Type, withPossibleValues values: [CVarArg], for key: String, includePendingChanges: Bool = true) throws -> [T] {
         let predicate = NSPredicate(format: "%K IN %@", key, values)
-        let fetchRequest = try T.createFetchRequest(with: .init(predicate: predicate))
+        let fetchRequest = T.createFetchRequest(with: .init(predicate: predicate))
         fetchRequest.includesPendingChanges = includePendingChanges
         if let objects = try fetch(fetchRequest) as? [T] {
             return objects
@@ -111,7 +115,7 @@ public extension NSManagedObjectContext {
     
     func objectsSatisfying<T: NSManagedObject>(of type: T.Type, _ dict: [String: CVarArg], includePendingChanges: Bool = true) throws -> [T] {
         let predicates = dict.map { NSPredicate(format: "%K == %@", $0.key, $0.value) }
-        let fetchRequest = try T.createFetchRequest(with: .init(predicate: NSCompoundPredicate(andPredicateWithSubpredicates: predicates)))
+        let fetchRequest = T.createFetchRequest(with: .init(predicate: NSCompoundPredicate(andPredicateWithSubpredicates: predicates)))
         fetchRequest.includesPendingChanges = includePendingChanges
         if let objects = try fetch(fetchRequest) as? [T] {
             return objects
@@ -162,7 +166,9 @@ public extension NSManagedObjectContext {
     }
     
     func saveChanges() throws {
-        guard !isReadOnly else { throw DataStorageError.saveReadOnlyContextFail }
+        guard !isReadOnly else {
+            throw DataStorageError.saveReadOnlyContextFail
+        }
         guard hasChanges else { return }
         
         do {
