@@ -8,13 +8,13 @@
 import CoreData
 
 public extension NSManagedObject {
-    class func updateObjects<T: NSManagedObject>(withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) throws -> [T] {
-        let entity = T.entity()
-        var result = [T]()
+    class func updateObjects(withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) throws -> [NSManagedObject] {
+        let entity = entity()
+        var result = [Self]()
 
         guard let uniqueAttribute = entity.uniqueAttribute else {
             result += try arrayOfDicts.map { dictionary in
-                let newObject = T(context: context)
+                let newObject = Self(context: context)
                 try newObject.update(withDictionary: dictionary, inContext: context)
                 return newObject
             }
@@ -28,7 +28,7 @@ public extension NSManagedObject {
                 throw DataStorageError.importUniqueKeyMustBeCVarArg
             }
         }
-        let existingObjects = try context.objects(of: T.self, withPossibleValues: values, for: uniqueAttribute.name)
+        let existingObjects = try context.objects(of: Self.self, withPossibleValues: values, for: uniqueAttribute.name)
         let existingObjectDict = Dictionary(try existingObjects.map { existingObject in
             if let hashableUniqueAttribute = existingObject.value(forKey: uniqueAttribute.name) as? AnyHashable {
                 return (hashableUniqueAttribute, existingObject)
@@ -44,7 +44,7 @@ public extension NSManagedObject {
                 try existingObject.update(withDictionary: dict, inContext: context)
                 result.append(existingObject)
             } else {
-                let newObject = T(context: context)
+                let newObject = Self(context: context)
                 try newObject.update(withDictionary: dict, inContext: context)
                 result.append(newObject)
             }
@@ -54,7 +54,7 @@ public extension NSManagedObject {
     }
     
     class func updateObject(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws -> Self {
-        try Self.updateObjects(withArrayOfDictionaries: [dict], inContext: context).first!
+        try Self.updateObjects(withArrayOfDictionaries: [dict], inContext: context).first as! Self
     }
     
     func update(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws {
