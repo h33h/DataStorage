@@ -41,6 +41,8 @@ public extension Date {
         
         return nil
     }
+    
+    var string: String { ISO8601DateFormatter.string(from: self, timeZone: .current, formatOptions: .withInternetDateTime) }
 }
 
 public extension String {

@@ -22,4 +22,15 @@ extension NSManagedObject {
         }
         return value
     }
+    
+    @objc open class func transformExportValue(_ value: Any?, forAttribute attribute: NSAttributeDescription) -> Any {
+        switch attribute.attributeType {
+        case .dateAttributeType: 
+            if let value = value as? Date {
+                return value.string
+            }
+        default: break
+        }
+        return value ?? NSNull()
+    }
 }
