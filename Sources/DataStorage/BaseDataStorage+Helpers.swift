@@ -21,7 +21,7 @@ public extension BaseDataStorage {
     }
     
     func createDeleteRequest<T: NSManagedObject>(of type: T.Type, with config: DataStorageFRConfiguration = .init()) throws -> NSBatchDeleteRequest {
-        if let fetchRequest = try createFetchRequest(of: type, with: config) as? NSFetchRequest<NSFetchRequestResult> {
+        if let fetchRequest = try createFetchRequest(of: T.self, with: config) as? NSFetchRequest<NSFetchRequestResult> {
             return .init(fetchRequest: fetchRequest)
         } else {
             throw DataStorageError.convertToConcreteTypeFail
@@ -29,22 +29,22 @@ public extension BaseDataStorage {
     }
     
     func objectsCount<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init(), inContext context: NSManagedObjectContext) throws -> Int {
-        let fetchRequest = try createFetchRequest(of: type, with: config)
+        let fetchRequest = try createFetchRequest(of: T.self, with: config)
         return try context.count(for: fetchRequest)
     }
     
     func deleteObjects<T: NSManagedObject>(of type: T.Type, for config: DataStorageFRConfiguration = .init(), inContext context: NSManagedObjectContext) throws {
-        let deleteRequest = try createDeleteRequest(of: type, with: config)
+        let deleteRequest = try createDeleteRequest(of: T.self, with: config)
         try context.execute(deleteRequest)
     }
     
     func objects<T: NSManagedObject>(of type: T.Type, with value: CVarArg, for key: String, includePendingChanges: Bool = true, inContext context: NSManagedObjectContext) throws -> [T] {
-        try objectsSatisfying(of: type, [key: value], includePendingChanges: includePendingChanges, inContext: context)
+        try objectsSatisfying(of: T.self, [key: value], includePendingChanges: includePendingChanges, inContext: context)
     }
     
     func objects<T: NSManagedObject>(of type: T.Type, withPossibleValues values: [CVarArg], for key: String, includePendingChanges: Bool = true, inContext context: NSManagedObjectContext) throws -> [T] {
         let predicate = NSPredicate(format: "%K IN %@", key, values)
-        let fetchRequest = try createFetchRequest(of: type, with: .init(predicate: predicate))
+        let fetchRequest = try createFetchRequest(of: T.self, with: .init(predicate: predicate))
         fetchRequest.includesPendingChanges = includePendingChanges
         return try context.fetch(fetchRequest)
     }
@@ -57,7 +57,7 @@ public extension BaseDataStorage {
     }
     
     func anyObject<T: NSManagedObject>(of type: T.Type, inContext context: NSManagedObjectContext) throws -> T {
-        if let object = try context.fetch(createFetchRequest(of: type)).first {
+        if let object = try context.fetch(createFetchRequest(of: T.self)).first {
             return object
         } else {
             throw DataStorageError.objectNotExist
@@ -90,7 +90,7 @@ public extension BaseDataStorage {
     }
     
     func updateObjects<T: NSManagedObject>(of type: T.Type, withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) throws -> [T] {
-        let entity = type.entity()
+        let entity = T.entity()
         var result = [T]()
 
         guard let uniqueAttribute = entity.uniqueAttribute else {
@@ -135,7 +135,7 @@ public extension BaseDataStorage {
     }
     
     func updateObject<T: NSManagedObject>(of type: T.Type, withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws -> T {
-        try updateObjects(of: type, withArrayOfDictionaries: [dict], inContext: context).first!
+        try updateObjects(of: T.self, withArrayOfDictionaries: [dict], inContext: context).first!
     }
     
     func update<T: NSManagedObject>(_ object: T, withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws {
@@ -197,7 +197,7 @@ public extension BaseDataStorage {
                 }
             } else {
                 if let relationshipDictionary = dict[relationship.importName] as? [String: Any] {
-                    object.setValue(try updateObject(of: destinationClass,withDictionary: relationshipDictionary, inContext: context), forKey: relationship.name)
+                    object.setValue(try updateObject(of: destinationClass, withDictionary: relationshipDictionary, inContext: context), forKey: relationship.name)
                 }
             }
         }
