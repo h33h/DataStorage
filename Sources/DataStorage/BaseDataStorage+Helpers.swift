@@ -95,9 +95,7 @@ public extension BaseDataStorage {
 
         guard let uniqueAttribute = entity.uniqueAttribute else {
             result += try arrayOfDicts.map { dictionary in
-                guard let newObject = NSEntityDescription.insertNewObject(forEntityName: entity.managedObjectClassName, into: context) as? T else {
-                    throw DataStorageError.convertToConcreteTypeFail
-                }
+                let newObject = type.init(context: context)
                 try update(newObject, withDictionary: dictionary, inContext: context)
                 return newObject
             }
@@ -111,7 +109,7 @@ public extension BaseDataStorage {
                 throw DataStorageError.importUniqueKeyMustBeCVarArg
             }
         }
-        let existingObjects = try objects(of: T.self, withPossibleValues: values, for: uniqueAttribute.name, inContext: context)
+        let existingObjects = try objects(of: type, withPossibleValues: values, for: uniqueAttribute.name, inContext: context)
         let existingObjectDict = Dictionary(try existingObjects.map { existingObject in
             if let hashableUniqueAttribute = existingObject.value(forKey: uniqueAttribute.name) as? AnyHashable {
                 return (hashableUniqueAttribute, existingObject)
@@ -127,7 +125,7 @@ public extension BaseDataStorage {
                 try update(existingObject, withDictionary: dict, inContext: context)
                 result.append(existingObject)
             } else {
-                let newObject = T(context: context)
+                let newObject = type.init(context: context)
                 try update(newObject, withDictionary: dict, inContext: context)
                 result.append(newObject)
             }
@@ -166,23 +164,23 @@ public extension BaseDataStorage {
                     if relationship.isOrdered {
                         if let orderedSet = object.value(forKey: relationship.name) as? NSMutableOrderedSet {
                             if relationship.deleteNotUpdated {
-                                let updatedObjects = Set(try updateObjects(of: destinationClass.self, withArrayOfDictionaries: relationshipDictionaries, inContext: context))
+                                let updatedObjects = Set(try updateObjects(of: destinationClass, withArrayOfDictionaries: relationshipDictionaries, inContext: context))
                                 let objectsForRemove = orderedSet.compactMap { $0 as? NSManagedObject }.filter { !updatedObjects.contains($0) }
                                 orderedSet.intersectSet(updatedObjects)
                                 orderedSet.unionSet(updatedObjects)
                                 object.setValue(orderedSet, forKey: relationship.name)
                                 objectsForRemove.forEach { context.delete($0) }
                             } else {
-                                orderedSet.unionSet(Set(try updateObjects(of: destinationClass.self, withArrayOfDictionaries: relationshipDictionaries, inContext: context)))
+                                orderedSet.unionSet(Set(try updateObjects(of: destinationClass, withArrayOfDictionaries: relationshipDictionaries, inContext: context)))
                                 object.setValue(orderedSet, forKey: relationship.name)
                             }
                         } else {
-                            object.setValue(NSOrderedSet(array: try updateObjects(of: destinationClass.self, withArrayOfDictionaries: relationshipDictionaries, inContext: context)), forKey: relationship.name)
+                            object.setValue(NSOrderedSet(array: try updateObjects(of: destinationClass, withArrayOfDictionaries: relationshipDictionaries, inContext: context)), forKey: relationship.name)
                         }
                     } else {
                         if let set = object.value(forKey: relationship.name) as? NSMutableSet {
                             if relationship.deleteNotUpdated {
-                                let updatedObjects = Set(try updateObjects(of: destinationClass.self, withArrayOfDictionaries: relationshipDictionaries, inContext: context))
+                                let updatedObjects = Set(try updateObjects(of: destinationClass, withArrayOfDictionaries: relationshipDictionaries, inContext: context))
                                 let objectsForRemove = set.compactMap { $0 as? NSManagedObject }.filter { !updatedObjects.contains($0) }
                                 set.intersect(updatedObjects)
                                 set.union(updatedObjects)
@@ -193,13 +191,13 @@ public extension BaseDataStorage {
                                 object.setValue(set, forKey: relationship.name)
                             }
                         } else {
-                            object.setValue(NSSet(array: try updateObjects(of: destinationClass.self, withArrayOfDictionaries: relationshipDictionaries, inContext: context)), forKey: relationship.name)
+                            object.setValue(NSSet(array: try updateObjects(of: destinationClass, withArrayOfDictionaries: relationshipDictionaries, inContext: context)), forKey: relationship.name)
                         }
                     }
                 }
             } else {
                 if let relationshipDictionary = dict[relationship.importName] as? [String: Any] {
-                    object.setValue(try updateObject(of: destinationClass.self, withDictionary: relationshipDictionary, inContext: context), forKey: relationship.name)
+                    object.setValue(try updateObject(of: destinationClass, withDictionary: relationshipDictionary, inContext: context), forKey: relationship.name)
                 }
             }
         }
