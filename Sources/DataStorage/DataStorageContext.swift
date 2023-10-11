@@ -187,7 +187,7 @@ public extension NSManagedObjectContext {
         let errors = {
             let error = error as NSError
             if error.code == NSValidationMultipleErrorsError {
-                return [error.userInfo[NSDetailedErrorsKey] as? NSError].compactMap { $0 }
+                return (error.userInfo[NSDetailedErrorsKey] as? [NSError])?.compactMap { $0 } ?? []
             } else {
                 return [error]
             }
