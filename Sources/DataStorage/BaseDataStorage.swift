@@ -139,13 +139,13 @@ open class BaseDataStorage {
     
     public func deleteAllData() throws {
         guard let storeURL = storeConfiguration.storeURL else { return }
-        try persistentStoreCoordinator.destroyPersistentStore(at: storeURL, ofType: storeConfiguration.storeType.storeType)
         mainContext.performAndWait {
             mainContext.reset()
         }
         writeContext.performAndWait {
             writeContext.reset()
         }
+        try persistentStoreCoordinator.destroyPersistentStore(at: storeURL, ofType: storeConfiguration.storeType.storeType)
         try connectPersistentStore(with: storeConfiguration)
     }
     
