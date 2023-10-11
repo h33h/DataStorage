@@ -95,7 +95,7 @@ public extension BaseDataStorage {
 
         guard let uniqueAttribute = entity.uniqueAttribute else {
             result += try arrayOfDicts.map { dictionary in
-                guard let newObject = NSEntityDescription.insertNewObject(forEntityName: entity.className, into: context) as? T else {
+                guard let newObject = NSEntityDescription.insertNewObject(forEntityName: entity.managedObjectClassName, into: context) as? T else {
                     throw DataStorageError.convertToConcreteTypeFail
                 }
                 try update(newObject, withDictionary: dictionary, inContext: context)
