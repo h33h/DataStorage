@@ -57,7 +57,7 @@ extension NSManagedObject {
         try Self.updateObjects(withArrayOfDictionaries: [dict], inContext: context).first as! Self
     }
     
-    private func update(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws {
+    public func update(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws {
         updateAttributes(withDictionary: dict)
         try updateRelationships(withDictionary: dict, inContext: context)
     }
