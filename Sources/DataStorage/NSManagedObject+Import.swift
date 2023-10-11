@@ -7,8 +7,8 @@
 
 import CoreData
 
-public extension NSManagedObject {
-    class func updateObjects(withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) throws -> [NSManagedObject] {
+extension NSManagedObject {
+    @objc open class func updateObjects(withArrayOfDictionaries arrayOfDicts: [[String: Any]], inContext context: NSManagedObjectContext) throws -> [NSManagedObject] {
         let entity = entity()
         var result = [Self]()
 
@@ -53,11 +53,11 @@ public extension NSManagedObject {
         return result
     }
     
-    class func updateObject(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws -> Self {
+    @objc open class func updateObject(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws -> Self {
         try Self.updateObjects(withArrayOfDictionaries: [dict], inContext: context).first as! Self
     }
     
-    func update(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws {
+    private func update(withDictionary dict: [String: Any], inContext context: NSManagedObjectContext) throws {
         updateAttributes(withDictionary: dict)
         try updateRelationships(withDictionary: dict, inContext: context)
     }
@@ -67,7 +67,7 @@ public extension NSManagedObject {
         
         attributes.forEach { attribute in
             if let valueInDictForAttribute = dict[attribute.importName] {
-                setValue(Self.transformValue(valueInDictForAttribute, forAttribute: attribute), forKey: attribute.name)
+                setValue(Self.transformImportValue(valueInDictForAttribute, forAttribute: attribute), forKey: attribute.name)
             }
         }
     }

@@ -7,8 +7,8 @@
 
 import CoreData
 
-public extension NSManagedObject {
-    func exportDictionary() -> [String: Any] { exportDictionary(parentEntityDescription: nil) }
+extension NSManagedObject {
+    @objc open func exportDictionary() -> [String: Any] { exportDictionary(parentEntityDescription: nil) }
     
     private func exportDictionary(parentEntityDescription: NSEntityDescription?) -> [String: Any] {
         var result = exportAttributesDictionary()

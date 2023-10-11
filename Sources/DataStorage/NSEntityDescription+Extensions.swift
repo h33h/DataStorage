@@ -7,7 +7,7 @@
 
 import CoreData
 
-extension NSEntityDescription {
+public extension NSEntityDescription {
     var attributes: [NSAttributeDescription] { attributesByName.map { $0.value } }
     
     var relationships: [NSRelationshipDescription] { relationshipsByName.map { $0.value } }

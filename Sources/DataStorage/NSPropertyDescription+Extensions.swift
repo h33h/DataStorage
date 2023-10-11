@@ -15,7 +15,7 @@ enum DataStorageKey: String {
     case deleteNotUpdated
 }
 
-extension NSPropertyDescription {
+public extension NSPropertyDescription {
     var importName: String {
         guard let importKeyValue = userInfo?[DataStorageKey.importKey.rawValue] as? String else { return name }
         return importKeyValue

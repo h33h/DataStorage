@@ -8,7 +8,7 @@
 import CoreData
 
 extension NSManagedObject {
-    @objc open class func transformValue(_ value: Any, forAttribute attribute: NSAttributeDescription) -> Any {
+    @objc open class func transformImportValue(_ value: Any, forAttribute attribute: NSAttributeDescription) -> Any {
         switch attribute.attributeType {
         case .URIAttributeType:
             if let value = value as? String, let url = NSURL(string: value) {
