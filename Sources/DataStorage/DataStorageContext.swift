@@ -8,19 +8,19 @@
 import CoreData
 
 public extension NSManagedObjectContext {
-    struct Holder {
-        static var _isReadOnly: Bool = false
-        static var _deleteInvalidObjectsOnSave: Bool = false
+    private struct NSManagedObjectContextAssociatedKeys {
+        static var isReadOnly: UInt8 = 0
+        static var deleteInvalidObjectsOnSave: UInt8 = 0
     }
     
     var isReadOnly: Bool {
-        get { Holder._isReadOnly }
-        set { Holder._isReadOnly = newValue }
+        get { objc_getAssociatedObject(self, &NSManagedObjectContextAssociatedKeys.isReadOnly) as? Bool ?? false }
+        set { objc_setAssociatedObject(self, &NSManagedObjectContextAssociatedKeys.isReadOnly, newValue, .OBJC_ASSOCIATION_ASSIGN) }
     }
     
     var deleteInvalidObjectsOnSave: Bool {
-        get { Holder._deleteInvalidObjectsOnSave }
-        set { Holder._deleteInvalidObjectsOnSave = newValue }
+        get { objc_getAssociatedObject(self, &NSManagedObjectContextAssociatedKeys.deleteInvalidObjectsOnSave) as? Bool ?? true }
+        set { objc_setAssociatedObject(self, &NSManagedObjectContextAssociatedKeys.deleteInvalidObjectsOnSave, newValue, .OBJC_ASSOCIATION_ASSIGN) }
     }
     
     convenience init(concurrencyType: NSManagedObjectContextConcurrencyType, isReadOnly: Bool = false, deleteInvalidObjectsOnSave: Bool = true) {
